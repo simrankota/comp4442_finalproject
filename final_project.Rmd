@@ -3,26 +3,292 @@ title: "final_project"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Packages Used
+```{r setup, include=TRUE}
+library(ggplot2)
 ```
 
-## R Markdown
+# Research Question
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We are attempting to explore the relationship between various features of a house (ex. number of rooms, square footage, year built, etc.) on the future value of the house.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Data Source and Definitions
 
-```{r cars}
-summary(cars)
+The [USA Housing Dataset](https://www.kaggle.com/gpandi007/usa-housing-dataset?select=housing_train.csv) from Kaggle provides data regarding sales prices with respect to various houses in the US. It has 81 features describing each record for 1460 records.
+
+``` {r}
+dat <- read.csv("housing_data.csv")
+str(dat)
 ```
 
-## Including Plots
+We don't care about the Id column, so we will drop it.
+``` {r}
+dat <- dat[,-c(1)]
+str(dat)
+```
+While the full variable descriptions can be found in the data_description.txt file in the repository, we have included a summary below:
+MSSubClass: type of house, categorical
 
-You can also embed plots, for example:
+MSZoning: zone of house, categorical
+	
+LotFrontage: Linear feet of street connected to house, continuous
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+LotArea: Lot size in square feet, continuous
+
+Street: Type of road access to house, categorical
+       	
+Alley: Type of alley access to house, categorical
+		
+LotShape: General shape of property, categorical
+       
+LandContour: Flatness of the property, categorical
+		
+Utilities: Type of utilities available, categorical
+	
+LotConfig: Type of lot, categorical
+	
+LandSlope: Slope of property, categorical
+	
+Neighborhood: Physical location, categorical
+			
+Condition1: Proximity to various conditions, categorical
+	
+Condition2: Proximity to various conditions (if more than one is present), categorical
+	
+BldgType: Type of home, categorical
+	
+HouseStyle: Style of home, categorical
+	
+OverallQual: Rating of the overall material and finish of the house, categorical
+	
+OverallCond: Rating of the overall condition of the house, categorical
+		
+YearBuilt: Original construction date, continuous
+
+YearRemodAdd: Remodel date (same as construction date if no remodeling or additions), continuous
+
+RoofStyle: Type of roof, categorical
+		
+RoofMatl: Roof material, categorical
+		
+Exterior1st: Exterior covering on house, categorical
+	
+Exterior2nd: Exterior covering on house (if more than one material), categorical
+	
+MasVnrType: Masonry veneer type, categorical
+	
+MasVnrArea: Masonry veneer area in square feet, categorical
+
+ExterQual: Evaluates the quality of the material on the exterior, categorical
+		
+ExterCond: Evaluates the present condition of the material on the exterior, categorical
+		
+Foundation: Type of foundation, categorical
+		
+BsmtQual: Evaluates the height of the basement, categorical
+		
+BsmtCond: Evaluates the general condition of the basement, categorical
+	
+BsmtExposure: Refers to walkout or garden level walls, categorical
+	
+BsmtFinType1: Rating of basement finished area, categorical
+		
+BsmtFinSF1: Type 1 finished square feet, continuous
+
+BsmtFinType2: Rating of basement finished area (if multiple types), categorical
+
+BsmtFinSF2: Type 2 finished square feet, continuous
+
+BsmtUnfSF: Unfinished square feet of basement area, continuous
+
+TotalBsmtSF: Total square feet of basement area, continuous
+
+Heating: Type of heating, categorical
+		
+HeatingQC: Heating quality and condition, categorical
+		
+CentralAir: Central air conditioning, categorical (binary)
+		
+Electrical: Electrical system, categorical
+		
+1stFlrSF: First Floor square feet, continuous
+ 
+2ndFlrSF: Second floor square feet, continuous
+
+LowQualFinSF: Low quality finished square feet (all floors), continuous
+
+GrLivArea: Above ground living area square feet, continuous
+
+BsmtFullBath: Basement full bathrooms, continuous
+
+BsmtHalfBath: Basement half bathrooms, continuous
+
+FullBath: Full bathrooms above ground, continuous
+
+HalfBath: Half baths above ground, continuous
+
+Bedroom: Bedrooms above ground (does NOT include basement bedrooms), continuous
+
+Kitchen: Kitchens above grade, continuous
+
+KitchenQual: Kitchen quality, categorical
+       	
+TotRmsAbvGrd: Total rooms above ground (does not include bathrooms), continuous
+
+Functional: Home functionality, categorical
+		
+Fireplaces: Number of fireplaces, continuous
+
+FireplaceQu: Fireplace quality, categorical
+		
+GarageType: Garage location, categorical
+		
+GarageYrBlt: Year garage was built, continuous
+		
+GarageFinish: Interior finish of the garage, categorical
+		
+GarageCars: Size of garage in car capacity, continuous
+
+GarageArea: Size of garage in square feet, continuous
+
+GarageQual: Garage quality, categorical
+		
+GarageCond: Garage condition, categorical
+		
+PavedDrive: Paved driveway, categorical
+		
+WoodDeckSF: Wood deck area in square feet, continuous
+
+OpenPorchSF: Open porch area in square feet, continuous
+
+EnclosedPorch: Enclosed porch area in square feet, continuous
+
+3SsnPorch: Three season porch area in square feet, continuous
+
+ScreenPorch: Screen porch area in square feet, continuous
+
+PoolArea: Pool area in square feet, continuous
+
+PoolQC: Pool quality, categorical
+		
+Fence: Fence quality, categorical
+	
+MiscFeature: Miscellaneous feature not covered in other categories, categorical
+		
+MiscVal: Value of miscellaneous feature, continuous
+
+MoSold: Month Sold (MM), continuous
+
+YrSold: Year Sold (YYYY), continuous
+
+SaleType: Type of sale, categorical
+		
+SaleCondition: Condition of sale, categorical
+
+SalePrice: Price the house was sold for, continuous
+
+Although some of the variables were automatically mistyped by R, we don't need all the variables for our analysis. We will first drop some variables to reduce the dataset to the data required, then retype the variables as needed.
+
+``` {r}
+dat <- subset(dat, select=-c(Condition1, Condition2, Exterior2nd, MasVnrType, MasVnrArea, BsmtExposure, BsmtFinType2, BsmtFinSF2, SaleType, SaleCondition))
+dim(dat)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+We are left with 70 features out of the original 81. We still have 1460 records, however, it is highly likely at least some of these have null values. We will examine these and clean them up next.
+
+``` {r}
+colSums(is.na(dat))
+```
+
+``` {r}
+dat$LotFrontage[is.na(dat$LotFrontage)] <- 0
+dat$Alley[is.na(dat$Alley)] <- "None"
+dat$BsmtQual[is.na(dat$BsmtQual)] <- "None"
+dat$BsmtCond[is.na(dat$BsmtCond)] <- "None"
+dat$BsmtFinType1[is.na(dat$BsmtFinType1)] <- "None"
+dat$Electrical[is.na(dat$Electrical)] <- "Unknown"
+dat$FireplaceQu[is.na(dat$FireplaceQu)] <- "None"
+dat$GarageType[is.na(dat$GarageType)] <- "None"
+dat$GarageYrBlt[is.na(dat$GarageYrBlt)] <- "0"
+dat$GarageFinish[is.na(dat$GarageFinish)] <- "None"
+dat$GarageQual[is.na(dat$GarageQual)] <- "None"
+dat$GarageCond[is.na(dat$GarageCond)] <- "None"
+dat$PoolQC[is.na(dat$PoolQC)] <- "None"
+dat$Fence[is.na(dat$Fence)] <- "None"
+dat$MiscFeature[is.na(dat$MiscFeature)] <- "None"
+```
+
+Checking our work:
+
+``` {r}
+colSums(is.na(dat))
+```
+
+Now that we have removed all the nulls, we will retype our variables.
+
+``` {r}
+dat$MSSubClass <- as.factor(dat$MSSubClass)
+dat$MSZoning <- as.factor(dat$MSZoning)
+dat$Street <- as.factor(dat$Street)
+dat$Alley <- as.factor(dat$Alley)
+dat$LotShape <- as.factor(dat$LotShape)
+dat$LandContour <- as.factor(dat$LandContour)
+dat$Utilities <- as.factor(dat$Utilities)
+dat$LotConfig <- as.factor(dat$LotConfig)
+dat$LandSlope <- as.factor(dat$LandSlope)
+dat$Neighborhood <- as.factor(dat$Neighborhood)
+dat$BldgType <- as.factor(dat$BldgType)
+dat$HouseStyle <- as.factor(dat$HouseStyle)
+dat$OverallQual <- as.factor(dat$OverallQual)
+dat$OverallCond <- as.factor(dat$OverallCond)
+dat$RoofStyle <- as.factor(dat$RoofStyle)
+dat$RoofMatl <- as.factor(dat$RoofMatl)
+dat$Exterior1st <- as.factor(dat$Exterior1st)
+dat$ExterQual <- as.factor(dat$ExterQual)
+dat$ExterCond <- as.factor(dat$ExterCond)
+dat$Foundation <- as.factor(dat$Foundation)
+dat$BsmtQual <- as.factor(dat$BsmtQual)
+dat$BsmtCond <- as.factor(dat$BsmtCond)
+dat$BsmtFinType1 <- as.factor(dat$BsmtFinType1)
+dat$Heating <- as.factor(dat$Heating)
+dat$HeatingQC <- as.factor(dat$HeatingQC)
+dat$CentralAir <- as.factor(dat$CentralAir)
+dat$Electrical <- as.factor(dat$Electrical)
+dat$KitchenQual <- as.factor(dat$KitchenQual)
+dat$Functional <- as.factor(dat$Functional)
+dat$FireplaceQu <- as.factor(dat$FireplaceQu)
+dat$GarageType <- as.factor(dat$GarageType)
+dat$GarageFinish <- as.factor(dat$GarageFinish)
+dat$GarageQual <- as.factor(dat$GarageQual)
+dat$GarageCond <- as.factor(dat$GarageCond)
+dat$PavedDrive <- as.factor(dat$PavedDrive)
+dat$PoolQC <- as.factor(dat$PoolQC)
+dat$Fence <- as.factor(dat$Fence)
+dat$MiscFeature <- as.factor(dat$MiscFeature)
+```
+
+Checking our work:
+``` {r}
+str(dat)
+```
+# Exploratory Data Analysis
+
+``` {r}
+for (col in c(names(dat))) {
+  g <- ggplot(data=dat, aes_string(x=col))
+  if (is.numeric(dat[[col]])) {
+    g <- g + geom_histogram(bins=30)
+  } else {
+    g <- g + geom_bar()
+  }
+  print(g)
+}
+```
+
+# Primary Method - Random Forests
+
+``` {r}
+
+```
+
+
