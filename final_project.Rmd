@@ -5,7 +5,8 @@ output: html_document
 
 # Packages Used
 ```{r setup, include=TRUE}
-library(ggplot2)
+library(tidyverse)
+library(randomForest)
 ```
 
 # Research Question
@@ -26,7 +27,11 @@ We don't care about the Id column, so we will drop it.
 dat <- dat[,-c(1)]
 str(dat)
 ```
+
+
 While the full variable descriptions can be found in the data_description.txt file in the repository, we have included a summary below:
+
+
 MSSubClass: type of house, categorical
 
 MSZoning: zone of house, categorical
@@ -190,11 +195,11 @@ SalePrice: Price the house was sold for, continuous
 Although some of the variables were automatically mistyped by R, we don't need all the variables for our analysis. We will first drop some variables to reduce the dataset to the data required, then retype the variables as needed.
 
 ``` {r}
-dat <- subset(dat, select=-c(Condition1, Condition2, Exterior2nd, MasVnrType, MasVnrArea, BsmtExposure, BsmtFinType2, BsmtFinSF2, SaleType, SaleCondition))
+dat <- subset(dat, select=-c(Condition1, Condition2, Exterior2nd, MasVnrType, MasVnrArea, BsmtExposure, BsmtFinType2, BsmtFinSF2, SaleType, SaleCondition, GarageYrBlt))
 dim(dat)
 ```
 
-We are left with 70 features out of the original 81. We still have 1460 records, however, it is highly likely at least some of these have null values. We will examine these and clean them up next.
+We are left with 69 features out of the original 81. We still have 1460 records, however, it is highly likely at least some of these have null values. We will examine these and clean them up next.
 
 ``` {r}
 colSums(is.na(dat))
@@ -209,7 +214,6 @@ dat$BsmtFinType1[is.na(dat$BsmtFinType1)] <- "None"
 dat$Electrical[is.na(dat$Electrical)] <- "Unknown"
 dat$FireplaceQu[is.na(dat$FireplaceQu)] <- "None"
 dat$GarageType[is.na(dat$GarageType)] <- "None"
-dat$GarageYrBlt[is.na(dat$GarageYrBlt)] <- "0"
 dat$GarageFinish[is.na(dat$GarageFinish)] <- "None"
 dat$GarageQual[is.na(dat$GarageQual)] <- "None"
 dat$GarageCond[is.na(dat$GarageCond)] <- "None"
@@ -288,7 +292,21 @@ for (col in c(names(dat))) {
 # Primary Method - Random Forests
 
 ``` {r}
+set.seed(1234567890)
 
+housing_randomForest <- randomForest(formula = SalePrice ~ ., data = dat)
+```
+
+```{r}
+plot(housing_randomForest)
+
+variableImportance <- data.frame(housing_randomForest$importance) %>%
+  arrange(desc(IncNodePurity)) %>%
+  top_n(25)
+
+variableImportance
+
+ggplot(data = variableImportance, aes(x = reorder(row.names(variableImportance), IncNodePurity), y = IncNodePurity)) + geom_col() + coord_flip() + ggtitle("Top 25 important variables")
 ```
 
 
