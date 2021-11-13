@@ -7,6 +7,7 @@ output: html_document
 ```{r setup, include=TRUE}
 library(tidyverse)
 library(randomForest)
+library(caret)
 ```
 
 # Research Question
@@ -294,19 +295,57 @@ for (col in c(names(dat))) {
 ``` {r}
 set.seed(1234567890)
 
-housing_randomForest <- randomForest(formula = SalePrice ~ ., data = dat)
-```
+n <- nrow(dat)
 
-```{r}
-plot(housing_randomForest)
+tv.split <- sample(rep(0:1, c(round(n*.3),n-2*round(n*.15))),n)
 
-variableImportance <- data.frame(housing_randomForest$importance) %>%
+dat.train <- dat[tv.split==1,]
+
+dat.valid <- dat[tv.split==0,]
+
+housing.randomForest <- randomForest(formula = SalePrice ~ ., data = dat)
+
+plot(housing.randomForest)
+
+variable.Importance <- data.frame(housing.randomForest$importance) %>%
   arrange(desc(IncNodePurity)) %>%
   top_n(25)
 
-variableImportance
+(ggplot(data = variable.Importance,
+       aes(x = reorder(row.names(variable.Importance), IncNodePurity), y = IncNodePurity))
+        + geom_col() + coord_flip() + ggtitle("Top 25 important variables"))
+```
 
-ggplot(data = variableImportance, aes(x = reorder(row.names(variableImportance), IncNodePurity), y = IncNodePurity)) + geom_col() + coord_flip() + ggtitle("Top 25 important variables")
+```{r}
+x.valid <- dat.valid[setdiff(names(dat.valid), "SalePrice")]
+
+y.valid <- dat.valid$SalePrice
+
+randomforest.trained <- randomForest(formula = SalePrice ~ ., data = dat.train)
+
+find.RMSPE <- function(true, predicted, df) {
+  return(sqrt(sum((predicted - true)^2)/nrow(df)))
+}
+
+predictions.valid <- predict(randomforest.trained, dat.valid)
+
+RMSPE <- find.RMSPE(dat.valid$SalePrice, predictions.test, dat.valid)
+
+RMSPE
+```
+
+```{r}
+randomforest.validated <- randomForest(formula = SalePrice ~ ., data = dat.train,
+                                       xtest = x.valid, ytest = y.valid)
+
+tibble(`Out of Bag Error` = sqrt(randomforest.validated$mse),
+       `Validation Error` = sqrt(randomforest.validated$test$mse),
+       ntrees = 1:randomforest.validated$ntree) %>%
+  gather(Grouping, RMSE, -ntrees) %>%
+  ggplot(aes(ntrees, RMSE, color = Grouping)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::dollar) +
+  xlab("Number of trees")
 ```
 
 
