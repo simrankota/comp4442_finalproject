@@ -1,6 +1,7 @@
 ---
 title: "final_project"
 output: html_document
+author: "Simran Kota, Yusef Haswarey"
 ---
 
 # Packages Used
@@ -8,6 +9,7 @@ output: html_document
 library(tidyverse)
 library(randomForest)
 library(caret)
+library(ggpubr)
 ```
 
 # Research Question
@@ -290,6 +292,7 @@ for (col in c(names(dat))) {
 }
 ```
 
+
 # Primary Method - Random Forests
 
 ``` {r}
@@ -309,11 +312,11 @@ plot(housing.randomForest)
 
 variable.Importance <- data.frame(housing.randomForest$importance) %>%
   arrange(desc(IncNodePurity)) %>%
-  top_n(25)
+  top_n(10)
 
 (ggplot(data = variable.Importance,
        aes(x = reorder(row.names(variable.Importance), IncNodePurity), y = IncNodePurity))
-        + geom_col() + coord_flip() + ggtitle("Top 25 important variables"))
+        + geom_col() + coord_flip() + ggtitle("Top 10 important variables"))
 ```
 
 ```{r}
@@ -329,7 +332,7 @@ find.RMSPE <- function(true, predicted, df) {
 
 predictions.valid <- predict(randomforest.trained, dat.valid)
 
-RMSPE <- find.RMSPE(dat.valid$SalePrice, predictions.test, dat.valid)
+RMSPE <- find.RMSPE(dat.valid$SalePrice, predictions.valid, dat.valid)
 
 RMSPE
 ```
