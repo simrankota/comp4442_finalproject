@@ -317,6 +317,18 @@ variable.Importance <- data.frame(housing.randomForest$importance) %>%
 (ggplot(data = variable.Importance,
        aes(x = reorder(row.names(variable.Importance), IncNodePurity), y = IncNodePurity))
         + geom_col() + coord_flip() + ggtitle("Top 10 important variables"))
+
+totalTreesBasic <- length(housing.randomForest$mse)
+
+totalTreesBasic
+
+minErrorTreesBasic <- which.min(housing.randomForest$mse)
+
+minErrorTreesBasic
+
+minErrorValueBasic <- sqrt(housing.randomForest$mse[which.min(housing.randomForest$mse)])
+
+minErrorValueBasic
 ```
 
 ```{r}
@@ -332,6 +344,18 @@ find.RMSPE <- function(true, predicted, df) {
 
 predictions.valid <- predict(randomforest.trained, dat.valid)
 
+totalTreesTrained <- length(randomforest.trained$mse)
+
+totalTreesTrained
+
+minErrorTreesTrained <- which.min(randomforest.trained$mse)
+
+minErrorTreesTrained
+
+minErrorValueTrained <- sqrt(randomforest.trained$mse[which.min(randomforest.trained$mse)])
+
+minErrorValueTrained
+
 RMSPE <- find.RMSPE(dat.valid$SalePrice, predictions.valid, dat.valid)
 
 RMSPE
@@ -340,6 +364,30 @@ RMSPE
 ```{r}
 randomforest.validated <- randomForest(formula = SalePrice ~ ., data = dat.train,
                                        xtest = x.valid, ytest = y.valid)
+
+totalTreesOOB <- length(randomforest.validated$mse)
+
+totalTreesOOB
+
+minErrorTreesOOB <- which.min(randomforest.validated$mse)
+
+minErrorTreesOOB
+
+minErrorValueOOB <- sqrt(randomforest.validated$mse[which.min(randomforest.validated$mse)])
+
+minErrorValueOOB
+
+totalTreesValidation <- length(randomforest.validated$test$mse)
+
+totalTreesValidation
+
+minErrorTreesValidation <- which.min(randomforest.validated$test$mse)
+
+minErrorTreesValidation
+
+minErrorValueValidation <- sqrt(randomforest.validated$test$mse[which.min(randomforest.validated$test$mse)])
+
+minErrorValueValidation
 
 tibble(`Out of Bag Error` = sqrt(randomforest.validated$mse),
        `Validation Error` = sqrt(randomforest.validated$test$mse),
