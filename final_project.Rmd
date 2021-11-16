@@ -1,7 +1,9 @@
 ---
 title: "final_project"
-output: html_document
 author: "Simran Kota, Yusef Haswarey"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Packages Used
