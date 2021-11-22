@@ -2,9 +2,9 @@
 title: "final_project"
 author: "Simran Kota, Yusef Haswarey"
 output:
-  word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
+  word_document: default
 ---
 
 # Packages Used
@@ -299,6 +299,12 @@ for (col in c(names(dat))) {
 # Primary Method - Random Forests
 
 ``` {r}
+mean(dat$SalePrice)
+
+median(dat$SalePrice)
+
+sd(dat$SalePrice)
+
 set.seed(1234567890)
 
 n <- nrow(dat)
@@ -337,12 +343,22 @@ minErrorTreesBasic
 minErrorValueBasic <- sqrt(housing.randomForest$mse[which.min(housing.randomForest$mse)])
 
 minErrorValueBasic
+
+meanErrorValueBasic <- sqrt(mean(housing.randomForest$mse))
+
+meanErrorValueBasic
 ```
 
 ```{r}
 x.valid <- dat.valid[setdiff(names(dat.valid), "SalePrice")]
 
 y.valid <- dat.valid$SalePrice
+
+mean(y.valid)
+
+median(y.valid)
+
+sd(y.valid)
 
 randomforest.trained <- randomForest(formula = SalePrice ~ ., data = dat.train)
 
@@ -379,6 +395,10 @@ minErrorValueTrained <- sqrt(randomforest.trained$mse[which.min(randomforest.tra
 
 minErrorValueTrained
 
+meanErrorValueTrained <- sqrt(mean(randomforest.trained$mse))
+
+meanErrorValueTrained
+
 RMSPE <- find.RMSPE(dat.valid$SalePrice, predictions.valid, dat.valid)
 
 RMSPE
@@ -398,6 +418,10 @@ minErrorValueOOB <- sqrt(randomforest.validated$mse[which.min(randomforest.valid
 
 minErrorValueOOB
 
+meanErrorValueTrained <- sqrt(mean(randomforest.validated$mse))
+
+meanErrorValueTrained
+
 minErrorTreesValidation <- which.min(randomforest.validated$test$mse)
 
 minErrorTreesValidation
@@ -405,6 +429,10 @@ minErrorTreesValidation
 minErrorValueValidation <- sqrt(randomforest.validated$test$mse[which.min(randomforest.validated$test$mse)])
 
 minErrorValueValidation
+
+meanErrorValueValidation <- sqrt(mean(randomforest.validated$test$mse))
+
+meanErrorValueValidation
 
 tibble(`Out of Bag Error` = sqrt(randomforest.validated$mse),
        `Validation Error` = sqrt(randomforest.validated$test$mse),
